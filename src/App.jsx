@@ -14,11 +14,12 @@ function formatTime(totalSeconds) {
   return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
 }
 
-function formatBytes(bytes) {
+function formatBytes(bytes, isEstimate = false) {
   if (!bytes) return '—';
   const mb = bytes / (1024 * 1024);
-  if (mb < 1000) return `${mb.toFixed(1)} MB`;
-  return `${(mb / 1024).toFixed(2)} GB`;
+  const prefix = isEstimate ? '~' : '';
+  if (mb < 1000) return `${prefix}${mb.toFixed(1)} MB`;
+  return `${prefix}${(mb / 1024).toFixed(2)} GB`;
 }
 
 // Uniquely identifies a "quality + trim range" combination, so we can
@@ -217,6 +218,10 @@ export default function App() {
 
   const fetchInfo = async () => {
     if (!url.trim()) return;
+    if (jobBusy) {
+      setInfoError('A download is currently in progress. Please wait for it to finish, or cancel it, before fetching a new video.');
+      return;
+    }
     resetForNewVideo();
     setInfoLoading(true);
     try {
@@ -385,7 +390,7 @@ export default function App() {
         </div>
         <div className="topbar-right">
           <div className="platform-chips">
-            {['YouTube', 'TikTok', 'Instagram', 'Facebook', 'X'].map((p) => (
+            {['YouTube', 'TikTok', 'Instagram', 'Facebook', 'X', 'Threads'].map((p) => (
               <span key={p} className="platform-chip">{p}</span>
             ))}
           </div>
@@ -426,7 +431,7 @@ export default function App() {
               <ClipboardIcon />
             </button>
           </div>
-          <button className="btn btn-primary" onClick={fetchInfo} disabled={infoLoading || !url.trim()}>
+          <button className="btn btn-primary" onClick={fetchInfo} disabled={infoLoading || !url.trim() || jobBusy}>
             {infoLoading ? 'Fetching…' : 'Fetch'}
           </button>
         </div>
@@ -452,17 +457,23 @@ export default function App() {
           <div className="section-block">
             <p className="section-label">Quality</p>
             <div className={`quality-grid ${jobBusy ? 'controls-disabled' : ''}`}>
-              {info.formats.map((f) => (
-                <button
-                  key={f.format_id}
-                  className={`quality-chip ${selectedFormatId === f.format_id ? 'active' : ''}`}
-                  onClick={() => selectFormat(f.format_id)}
-                  disabled={jobBusy}
-                >
-                  <span className="quality-label">{f.quality}</span>
-                  <span className="quality-size mono">{formatBytes(f.filesize)}</span>
-                </button>
-              ))}
+              {info.formats.map((f) => {
+                const clipDuration = trimEnabled ? Math.max(0, endSec - startSec) : duration;
+                const displaySize = trimEnabled && duration > 0 && f.filesize
+                  ? f.filesize * (clipDuration / duration)
+                  : f.filesize;
+                return (
+                  <button
+                    key={f.format_id}
+                    className={`quality-chip ${selectedFormatId === f.format_id ? 'active' : ''}`}
+                    onClick={() => selectFormat(f.format_id)}
+                    disabled={jobBusy}
+                  >
+                    <span className="quality-label">{f.quality}</span>
+                    <span className="quality-size mono">{formatBytes(displaySize, trimEnabled)}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -589,7 +600,7 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <p>Works with links from YouTube, TikTok, Instagram, Facebook and X</p>
+        <p>Works with links from YouTube, TikTok, Instagram, Facebook, X, and Threads.</p>
       </footer>
     </div>
   );
