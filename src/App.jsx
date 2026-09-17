@@ -14,7 +14,7 @@ import {
 } from './utils/session';
 
 const DEFAULT_API_BASE =
-  // import.meta.env.VITE_API_BASE ||
+  import.meta.env.VITE_API_BASE ||
   'http://localhost:5000/api';
 
 const THEME_STORAGE_KEY = 'clipflow-theme';
