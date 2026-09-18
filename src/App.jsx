@@ -1523,16 +1523,12 @@ export default function App() {
                       </span>
 
                       {hasByteProgress && (
-                        <span
+                       <span
                           className="download-byte-progress"
                           style={{
-                            fontSize:
-                              '0.72rem',
+                            fontSize: '0.72rem',
                             opacity: 0.65,
-                            marginLeft:
-                              '2px',
-                            whiteSpace:
-                              'nowrap',
+                            marginLeft: '2px',
                           }}
                         >
                           <span className="mono">
