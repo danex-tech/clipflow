@@ -20,30 +20,48 @@ const DEFAULT_API_BASE =
 const THEME_STORAGE_KEY = 'clipflow-theme';
 
 function formatTime(totalSeconds) {
-  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const s = Math.max(
+    0,
+    Math.floor(totalSeconds || 0)
+  );
+
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  const pad = (n) => String(n).padStart(2, '0');
+
+  const pad = (n) =>
+    String(n).padStart(2, '0');
 
   return h > 0
     ? `${pad(h)}:${pad(m)}:${pad(sec)}`
     : `${pad(m)}:${pad(sec)}`;
 }
 
-function formatBytes(bytes, isEstimate = false) {
-  if (!Number.isFinite(bytes) || bytes <= 0) {
+function formatBytes(
+  bytes,
+  isEstimate = false
+) {
+  if (
+    !Number.isFinite(bytes) ||
+    bytes <= 0
+  ) {
     return '—';
   }
 
-  const mb = bytes / (1024 * 1024);
-  const prefix = isEstimate ? '~' : '';
+  const mb =
+    bytes / (1024 * 1024);
+
+  const prefix = isEstimate
+    ? '~'
+    : '';
 
   if (mb < 1000) {
     return `${prefix}${mb.toFixed(1)} MB`;
   }
 
-  return `${prefix}${(mb / 1024).toFixed(2)} GB`;
+  return `${prefix}${(
+    mb / 1024
+  ).toFixed(2)} GB`;
 }
 
 function makeJobKey(
@@ -117,6 +135,7 @@ function ClipboardIcon() {
         height="4"
         rx="1"
       />
+
       <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
     </svg>
   );
@@ -134,7 +153,12 @@ function ThemeIcon({ theme }) {
         strokeWidth="2"
         strokeLinecap="round"
       >
-        <circle cx="12" cy="12" r="4" />
+        <circle
+          cx="12"
+          cy="12"
+          r="4"
+        />
+
         <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
       </svg>
     );
@@ -175,6 +199,7 @@ function ThemeIcon({ theme }) {
         height="14"
         rx="2"
       />
+
       <path d="M8 21h8M12 17v4" />
     </svg>
   );
@@ -237,7 +262,9 @@ function SkeletonCard() {
 export default function App() {
   const [themePref, setThemePref] =
     useState(() => {
-      if (typeof window === 'undefined') {
+      if (
+        typeof window === 'undefined'
+      ) {
         return 'system';
       }
 
@@ -253,11 +280,12 @@ export default function App() {
       let effective = themePref;
 
       if (themePref === 'system') {
-        effective = window.matchMedia(
-          '(prefers-color-scheme: light)'
-        ).matches
-          ? 'light'
-          : 'dark';
+        effective =
+          window.matchMedia(
+            '(prefers-color-scheme: light)'
+          ).matches
+            ? 'light'
+            : 'dark';
       }
 
       document.documentElement.setAttribute(
@@ -269,9 +297,10 @@ export default function App() {
     applyTheme();
 
     if (themePref === 'system') {
-      const mq = window.matchMedia(
-        '(prefers-color-scheme: light)'
-      );
+      const mq =
+        window.matchMedia(
+          '(prefers-color-scheme: light)'
+        );
 
       mq.addEventListener(
         'change',
@@ -335,13 +364,15 @@ export default function App() {
   const jobKeyRef = useRef(null);
 
   // Keeps the displayed progress from moving
-  // backwards when yt-dlp switches from one
-  // stream (video) to another (audio).
+  // backwards during a single attempt.
   const maxProgressRef = useRef(0);
 
   // Keeps byte progress visually stable as well.
-  const maxDownloadedBytesRef = useRef(0);
-  const maxTotalBytesRef = useRef(0);
+  const maxDownloadedBytesRef =
+    useRef(0);
+
+  const maxTotalBytesRef =
+    useRef(0);
 
   const jobBusy =
     job &&
@@ -371,8 +402,13 @@ export default function App() {
       saved.trimEnabled || false
     );
 
-    setStartSec(saved.startSec || 0);
-    setEndSec(saved.endSec || 0);
+    setStartSec(
+      saved.startSec || 0
+    );
+
+    setEndSec(
+      saved.endSec || 0
+    );
 
     if (saved.jobId) {
       jobKeyRef.current =
@@ -392,7 +428,8 @@ export default function App() {
             }
           );
 
-          const data = await res.json();
+          const data =
+            await res.json();
 
           if (res.ok) {
             const restored = {
@@ -423,11 +460,13 @@ export default function App() {
 
             maxDownloadedBytesRef.current =
               Number.isFinite(
-                data.progress?.downloadedBytes
+                data.progress
+                  ?.downloadedBytes
               )
                 ? Math.max(
                     0,
-                    data.progress.downloadedBytes
+                    data.progress
+                      .downloadedBytes
                   )
                 : 0;
 
@@ -469,11 +508,12 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const resetProgressTracking = () => {
-    maxProgressRef.current = 0;
-    maxDownloadedBytesRef.current = 0;
-    maxTotalBytesRef.current = 0;
-  };
+  const resetProgressTracking =
+    () => {
+      maxProgressRef.current = 0;
+      maxDownloadedBytesRef.current = 0;
+      maxTotalBytesRef.current = 0;
+    };
 
   const resetForNewVideo = () => {
     setInfo(null);
@@ -535,7 +575,8 @@ export default function App() {
         }
       );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       if (!res.ok) {
         throw new Error(
@@ -558,7 +599,9 @@ export default function App() {
         );
       }
 
-      setEndSec(data.duration || 0);
+      setEndSec(
+        data.duration || 0
+      );
 
       saveSession({
         url: url.trim(),
@@ -567,7 +610,8 @@ export default function App() {
           firstFormatId,
         trimEnabled: false,
         startSec: 0,
-        endSec: data.duration || 0,
+        endSec:
+          data.duration || 0,
         jobId: null,
       });
     } catch (err) {
@@ -664,7 +708,6 @@ export default function App() {
 
   const startDownload = async () => {
     setDownloadError('');
-
     resetProgressTracking();
 
     const key = makeJobKey(
@@ -699,9 +742,11 @@ export default function App() {
 
       const body = {
         url: url.trim(),
-        formatId: selectedFormatId,
+        formatId:
+          selectedFormatId,
         height:
-          selectedFormat?.height || null,
+          selectedFormat?.height ||
+          null,
         hasAudio: Boolean(
           selectedFormat?.hasAudio
         ),
@@ -730,7 +775,8 @@ export default function App() {
         }
       );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       if (!res.ok) {
         throw new Error(
@@ -746,9 +792,11 @@ export default function App() {
         progress: {
           stage: 'queued',
           percent: 0,
+
           ...(Number.isFinite(
             expectedSize
-          ) && expectedSize > 0
+          ) &&
+          expectedSize > 0
             ? {
                 expectedSize,
                 totalBytes:
@@ -783,196 +831,261 @@ export default function App() {
   // CANCEL
   // ------------------------------------------------------------
 
-  const cancelDownload = async () => {
-    if (!job?.id || cancelling) {
-      return;
-    }
+  const cancelDownload =
+    async () => {
+      if (
+        !job?.id ||
+        cancelling
+      ) {
+        return;
+      }
 
-    setCancelling(true);
+      setCancelling(true);
 
-    try {
-      await fetch(
-        `${DEFAULT_API_BASE}/download/cancel/${job.id}`,
-        {
-          method: 'POST',
-        }
-      );
-    } catch {
-      // Worker will catch up through its
-      // periodic cancellation check.
-    }
-
-    clearInterval(
-      pollRef.current
-    );
-
-    setJob((prev) =>
-      prev
-        ? {
-            ...prev,
-            state: 'cancelled',
+      try {
+        await fetch(
+          `${DEFAULT_API_BASE}/download/cancel/${job.id}`,
+          {
+            method: 'POST',
           }
-        : prev
-    );
+        );
+      } catch {
+        // Worker will catch up through its
+        // periodic cancellation check.
+      }
 
-    clearSession();
-    resetProgressTracking();
-    setCancelling(false);
-  };
+      clearInterval(
+        pollRef.current
+      );
+
+      setJob((prev) =>
+        prev
+          ? {
+              ...prev,
+              state: 'cancelled',
+            }
+          : prev
+      );
+
+      clearSession();
+      resetProgressTracking();
+      setCancelling(false);
+    };
 
   // ------------------------------------------------------------
   // POLL JOB STATUS
   // ------------------------------------------------------------
 
-  const pollStatus = useCallback(
-    async () => {
-      if (!job?.id) return;
+  const pollStatus =
+    useCallback(
+      async () => {
+        if (!job?.id) return;
 
-      try {
-        const res = await fetch(
-          `${DEFAULT_API_BASE}/download/status/${job.id}`,
-          {
-            cache: 'no-store',
+        try {
+          const res = await fetch(
+            `${DEFAULT_API_BASE}/download/status/${job.id}`,
+            {
+              cache: 'no-store',
+            }
+          );
+
+          const data =
+            await res.json();
+
+          if (!res.ok) {
+            throw new Error(
+              data.error ||
+                'Status check failed'
+            );
           }
-        );
 
-        const data = await res.json();
+          const incomingProgress =
+            data.progress || {};
 
-        if (!res.ok) {
-          throw new Error(
-            data.error ||
-              'Status check failed'
-          );
-        }
+          /*
+           * IMPORTANT:
+           *
+           * A new retry attempt intentionally starts
+           * progress over at 0% when the backend sends
+           * "Reconnecting".
+           *
+           * The old implementation always kept the
+           * previous attempt's max percentage, which
+           * could make the UI show something like 68%
+           * while the backend had already restarted
+           * at 0%.
+           *
+           * Reset the visual progress tracker when a
+           * new attempt begins.
+           */
+          const incomingAttempt =
+            Number.isFinite(
+              incomingProgress.attempt
+            )
+              ? incomingProgress.attempt
+              : 1;
 
-        const incomingProgress =
-          data.progress || {};
+          const previousAttempt =
+            Number.isFinite(
+              job.progress?.attempt
+            )
+              ? job.progress.attempt
+              : 1;
 
-        // Prevent the UI from moving backwards when
-        // yt-dlp changes from the video stream to the
-        // audio stream and reports a new percentage.
-        const incomingPercent =
-          Number.isFinite(
-            incomingProgress.percent
-          )
-            ? Math.min(
-                100,
-                Math.max(
-                  0,
-                  incomingProgress.percent
+          const isNewAttempt =
+            incomingAttempt >
+            previousAttempt;
+
+          const isReconnecting =
+            incomingProgress.stage ===
+            'Reconnecting';
+
+          if (
+            isNewAttempt ||
+            isReconnecting
+          ) {
+            maxProgressRef.current = 0;
+            maxDownloadedBytesRef.current = 0;
+            maxTotalBytesRef.current = 0;
+          }
+
+          const incomingPercent =
+            Number.isFinite(
+              incomingProgress.percent
+            )
+              ? Math.min(
+                  100,
+                  Math.max(
+                    0,
+                    incomingProgress.percent
+                  )
                 )
-              )
-            : 0;
+              : 0;
 
-        maxProgressRef.current =
-          Math.max(
-            maxProgressRef.current,
-            incomingPercent
+          /*
+           * During a normal attempt, never move
+           * progress backwards.
+           *
+           * During a retry/reconnect, the tracker
+           * has just been reset above, so the new
+           * attempt can correctly start from 0%.
+           */
+          maxProgressRef.current =
+            Math.max(
+              maxProgressRef.current,
+              incomingPercent
+            );
+
+          // Keep byte values visually stable too.
+          if (
+            Number.isFinite(
+              incomingProgress.downloadedBytes
+            )
+          ) {
+            maxDownloadedBytesRef.current =
+              Math.max(
+                maxDownloadedBytesRef.current,
+                incomingProgress.downloadedBytes
+              );
+          }
+
+          if (
+            Number.isFinite(
+              incomingProgress.totalBytes
+            )
+          ) {
+            maxTotalBytesRef.current =
+              Math.max(
+                maxTotalBytesRef.current,
+                incomingProgress.totalBytes
+              );
+          }
+
+          const normalizedProgress = {
+            ...incomingProgress,
+
+            percent:
+              maxProgressRef.current,
+
+            downloadedBytes:
+              maxDownloadedBytesRef.current ||
+              incomingProgress.downloadedBytes,
+
+            totalBytes:
+              maxTotalBytesRef.current ||
+              incomingProgress.totalBytes,
+          };
+
+          const updated = {
+            id: job.id,
+            state: data.state,
+            progress:
+              normalizedProgress,
+            failedReason:
+              data.failedReason,
+            attemptsMade:
+              data.attemptsMade,
+            queuePosition:
+              data.queuePosition,
+            totalWaiting:
+              data.totalWaiting,
+          };
+
+          setJob(updated);
+
+          saveSession({
+            url: url.trim(),
+            info,
+            selectedFormatId,
+            trimEnabled,
+            startSec,
+            endSec,
+            jobId: job.id,
+          });
+
+          if (
+            [
+              'completed',
+              'failed',
+              'cancelled',
+            ].includes(data.state)
+          ) {
+            clearInterval(
+              pollRef.current
+            );
+
+            const key =
+              jobKeyRef.current;
+
+            if (key) {
+              setJobsCache(
+                (prev) => ({
+                  ...prev,
+                  [key]: updated,
+                })
+              );
+            }
+          }
+        } catch (err) {
+          setDownloadError(
+            err.message
           );
 
-        // Keep byte values visually stable too.
-        if (
-          Number.isFinite(
-            incomingProgress.downloadedBytes
-          )
-        ) {
-          maxDownloadedBytesRef.current =
-            Math.max(
-              maxDownloadedBytesRef.current,
-              incomingProgress.downloadedBytes
-            );
-        }
-
-        if (
-          Number.isFinite(
-            incomingProgress.totalBytes
-          )
-        ) {
-          maxTotalBytesRef.current =
-            Math.max(
-              maxTotalBytesRef.current,
-              incomingProgress.totalBytes
-            );
-        }
-
-        const normalizedProgress = {
-          ...incomingProgress,
-          percent:
-            maxProgressRef.current,
-          downloadedBytes:
-            maxDownloadedBytesRef.current ||
-            incomingProgress.downloadedBytes,
-          totalBytes:
-            maxTotalBytesRef.current ||
-            incomingProgress.totalBytes,
-        };
-
-        const updated = {
-          id: job.id,
-          state: data.state,
-          progress:
-            normalizedProgress,
-          failedReason:
-            data.failedReason,
-          attemptsMade:
-            data.attemptsMade,
-          queuePosition:
-            data.queuePosition,
-          totalWaiting:
-            data.totalWaiting,
-        };
-
-        setJob(updated);
-
-        saveSession({
-          url: url.trim(),
-          info,
-          selectedFormatId,
-          trimEnabled,
-          startSec,
-          endSec,
-          jobId: job.id,
-        });
-
-        if (
-          [
-            'completed',
-            'failed',
-            'cancelled',
-          ].includes(data.state)
-        ) {
           clearInterval(
             pollRef.current
           );
-
-          const key =
-            jobKeyRef.current;
-
-          if (key) {
-            setJobsCache((prev) => ({
-              ...prev,
-              [key]: updated,
-            }));
-          }
         }
-      } catch (err) {
-        setDownloadError(
-          err.message
-        );
-
-        clearInterval(
-          pollRef.current
-        );
-      }
-    },
-    [job?.id]
-  );
+      },
+      [job?.id]
+    );
 
   useEffect(() => {
     if (
       job?.id &&
-      (job.state === 'waiting' ||
-        job.state === 'active')
+      (
+        job.state === 'waiting' ||
+        job.state === 'active'
+      )
     ) {
       pollRef.current =
         setInterval(
@@ -1143,7 +1256,9 @@ export default function App() {
                   t.slice(1)
                 } mode`}
               >
-                <ThemeIcon theme={t} />
+                <ThemeIcon
+                  theme={t}
+                />
               </button>
             ))}
           </div>
@@ -1171,7 +1286,9 @@ export default function App() {
               placeholder="https://youtube.com/watch?v=…"
               value={url}
               onChange={(e) =>
-                setUrl(e.target.value)
+                setUrl(
+                  e.target.value
+                )
               }
               className="url-input"
               onKeyDown={(e) =>
@@ -1213,7 +1330,9 @@ export default function App() {
         )}
       </main>
 
-      {infoLoading && <SkeletonCard />}
+      {infoLoading && (
+        <SkeletonCard />
+      )}
 
       {!infoLoading && info && (
         <section className="result-card">
@@ -1260,7 +1379,8 @@ export default function App() {
                   trimEnabled
                     ? Math.max(
                         0,
-                        endSec - startSec
+                        endSec -
+                          startSec
                       )
                     : duration;
 
@@ -1359,6 +1479,7 @@ export default function App() {
                           100
                         : 0
                     }%`,
+
                     right: `${
                       duration
                         ? 100 -
@@ -1440,7 +1561,9 @@ export default function App() {
           <div className="download-row">
             <button
               className="btn btn-primary btn-large"
-              onClick={startDownload}
+              onClick={
+                startDownload
+              }
               disabled={
                 !selectedFormatId ||
                 jobBusy
@@ -1480,6 +1603,7 @@ export default function App() {
                           : 'jobs'}{' '}
                         ahead of you in the
                         queue
+
                         {job.totalWaiting
                           ? ` (${job.totalWaiting} waiting total)`
                           : ''}
@@ -1523,12 +1647,14 @@ export default function App() {
                       </span>
 
                       {hasByteProgress && (
-                       <span
+                        <span
                           className="download-byte-progress"
                           style={{
-                            fontSize: '0.72rem',
+                            fontSize:
+                              '0.72rem',
                             opacity: 0.65,
-                            marginLeft: '2px',
+                            marginLeft:
+                              '2px',
                           }}
                         >
                           <span className="mono">
